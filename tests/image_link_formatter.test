@@ -8,7 +8,7 @@
 /**
  * Provides common functionality for the Image Link Formatter test classes.
  */
-class ImageLinkFormatterTestCase extends DrupalWebTestCase {
+class ImageLinkFormatterTestCase extends BackdropWebTestCase {
 
   /**
    * User object to perform site browsing.
@@ -67,8 +67,8 @@ class ImageLinkFormatterTestCase extends DrupalWebTestCase {
     parent::setUp($modules);
 
     // Authenticate test user.
-    $this->privilegedUser = $this->drupalCreateUser($this->permissions);
-    $this->drupalLogin($this->privilegedUser);
+    $this->privilegedUser = $this->backdropCreateUser($this->permissions);
+    $this->backdropLogin($this->privilegedUser);
     // Initialize field names if they have not been overriden.
     if (empty($this->fieldLinkName)) {
       $this->fieldLinkName = strtolower($this->randomName());
@@ -151,7 +151,7 @@ class ImageLinkFormatterTestCase extends DrupalWebTestCase {
    */
   public function createNodeWithLinkImage() {
     // Get the first file returned as a test image.
-    $image = current($this->drupalGetTestFiles('image'));
+    $image = current($this->backdropGetTestFiles('image'));
 
     // Create a node with test link and image data.
     $edit = array(
@@ -160,9 +160,9 @@ class ImageLinkFormatterTestCase extends DrupalWebTestCase {
       $this->fieldLinkName . '['. LANGUAGE_NONE . '][0][title]' => 'Link ILF test',
       $this->fieldLinkName . '['. LANGUAGE_NONE . '][0][url]' => 'http://www.example.com/?example=query#example_fragment',
       // Image field value.
-      'files[' . $this->fieldImageName . '_' . LANGUAGE_NONE . '_0]' => drupal_realpath($image->uri),
+      'files[' . $this->fieldImageName . '_' . LANGUAGE_NONE . '_0]' => backdrop_realpath($image->uri),
     );
-    $this->drupalPost('node/add/' . $this->bundle, $edit, t('Save'));
+    $this->backdropPost('node/add/' . $this->bundle, $edit, t('Save'));
 
     // Check the node was saved successfully.
     $types = node_type_get_types();
@@ -216,7 +216,7 @@ class ImageLinkFormatterTestCase extends DrupalWebTestCase {
 
     // Create the HTML markup of the Link.
     // Parse the URL to separate its components: query, fragment, etc...
-    $url = drupal_parse_url($node->{$this->fieldLinkName}[LANGUAGE_NONE][$delta]['url']);
+    $url = backdrop_parse_url($node->{$this->fieldLinkName}[LANGUAGE_NONE][$delta]['url']);
 
     // Test fragment, query, rel, class, title and target attributes.
     $options = array (
@@ -262,18 +262,6 @@ class ImageLinkFormatterTestCase extends DrupalWebTestCase {
  * Test Image Link Formatter's form and summary on the Manage display pages.
  */
 class ImageLinkFormatterFieldUITestCase extends ImageLinkFormatterTestCase {
-
-  /**
-   * Implements DrupalWebTestCase::getInfo().
-   */
-  public static function getInfo() {
-    return array(
-      'name' => 'Manage display formatter configuration',
-      'description' => 'Test the configuration of the Image Link Formatter display settings on the Manage display page.',
-      'group' => 'Image Link Formatter',
-    );
-  }
-
   /**
    * Enable modules and create user with specific permissions.
    */
@@ -302,7 +290,7 @@ class ImageLinkFormatterFieldUITestCase extends ImageLinkFormatterTestCase {
 
     // Now that the fields have been created, let's test the formatter.
 	  // Browse to the Manage Display page.
-    $this->drupalGet("admin/structure/types/manage/{$this->bundle}/display");
+    $this->backdropGet("admin/structure/types/manage/{$this->bundle}/display/default");
 
     // Change Image field's formatter to select image_link_formatter.
     $edit = array(
@@ -310,14 +298,14 @@ class ImageLinkFormatterFieldUITestCase extends ImageLinkFormatterTestCase {
       'refresh_rows' => $this->fieldImageName,
     );
     // Process the change through the AJAX form of the page.
-    $this->drupalPostAJAX(NULL, $edit, array('op' => t('Refresh')));
+    $this->backdropPostAJAX(NULL, $edit, array('op' => t('Refresh')));
     // Check if expected formatter is selected.
     $this->assertFieldByName('fields['. $this->fieldImageName .'][type]', $formatter, 'The Image Link Formatter is selected.');
 
     // Now edit the Image Link Formatter settings form.
-    $this->drupalPostAJAX(NULL, array(), $this->fieldImageName . '_formatter_settings_edit');
+    $this->backdropPostAJAX(NULL, array(), $this->fieldImageName . '_formatter_settings_edit');
     // Display the page with the formatter settings form.
-    $this->verbose($this->drupalGetContent());
+    $this->verbose($this->backdropGetContent());
     // No value should be selected for the image link.
     $this->assertFieldByName('fields['. $this->fieldImageName .'][settings_edit_form][settings][image_link]', "", 'Formatter <em>"Link image to"</em> is not yet configured.');
 
@@ -325,15 +313,15 @@ class ImageLinkFormatterFieldUITestCase extends ImageLinkFormatterTestCase {
     $edit = array(
       'fields['. $this->fieldImageName .'][settings_edit_form][settings][image_link]' => $this->fieldLinkName,
     );
-    $this->drupalPostAJAX(NULL, $edit, array($this->fieldImageName . '_formatter_settings_update' => t('Update')));
+    $this->backdropPostAJAX(NULL, $edit, array($this->fieldImageName . '_formatter_settings_update' => t('Update')));
     // Display the page with the correct formatter summary.
-    $this->verbose($this->drupalGetContent());
+    $this->verbose($this->backdropGetContent());
 
     // Hide the link and save all the formatter settings edited so far.
     $edit = array(
       'fields['. $this->fieldLinkName .'][type]' => 'hidden',
     );
-    $this->drupalPost(NULL, $edit, t('Save'));
+    $this->backdropPost(NULL, $edit, t('Save'));
 	  $this->assertRaw('Your settings have been saved.');
 
     // Check the formatter summary of the image field contains selected link.

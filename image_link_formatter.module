@@ -15,7 +15,10 @@ function image_link_formatter_field_formatter_info() {
     'image_link_formatter' => array(
       'label' => t('Image Link Formatter'),
       'field types' => array('image'),
-      'settings' => array('image_style' => '', 'image_link' => ''),
+      'settings' => array(
+        'image_style' => '',
+        'image_link' => '',
+      ),
     ),
   );
 

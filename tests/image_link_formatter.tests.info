@@ -1,0 +1,6 @@
+[ImageLinkFormatterFieldUITestCase]
+name = Manage display formatter configuration
+description = Test the configuration of the Image Link Formatter display settings on the Manage display page.
+group = Image Link Formatter
+file = image_link_formatter.test
+
